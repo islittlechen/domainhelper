@@ -13,15 +13,22 @@ import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+
+import com.github.domainhelper.configure.ConfigurationService;
+import com.github.domainhelper.sql.builder.DomainSQLBuilder;
+import com.github.domainhelper.sql.helper.DomainHelper;
  
 @Intercepts(@Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}))
 public class DomainQueryInterceptor implements Interceptor {
 	
-	private String[] domainTables;
+	private ConfigurationService configurationService;
 	
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {
+		if(DomainHelper.get() == null) {
+			return invocation.proceed();
+		}
 		Object[] args = invocation.getArgs();
         MappedStatement ms = (MappedStatement) args[0];
         Object parameterObject = args[1];
@@ -45,7 +52,7 @@ public class DomainQueryInterceptor implements Interceptor {
 	private String generatorSQL(String originSQL,Object parameterObject ) {
 		String queryDomainSql = originSQL.toLowerCase();
 		 
-		return queryDomainSql;
+		return DomainSQLBuilder.builder(queryDomainSql,configurationService);
 	}
 	
     @Override
@@ -54,14 +61,17 @@ public class DomainQueryInterceptor implements Interceptor {
     }
 
     @Override
-    public void setProperties(Properties properties) {
-    		String domainTablesStr = properties.getProperty("domainTable","");
-    		domainTables = domainTablesStr.split(",");
-    		for(int i = 0 ; i < domainTables.length; i++) {
-    			String domainTableName = domainTables[i];
-    			domainTables[i] = domainTableName.toLowerCase();
-    		}
+    public void setProperties(Properties properties) { 
     }
 
+	public ConfigurationService getConfigurationService() {
+		return configurationService;
+	}
+
+	public void setConfigurationService(ConfigurationService configurationService) {
+		this.configurationService = configurationService;
+	}
+
+    
 
 }
