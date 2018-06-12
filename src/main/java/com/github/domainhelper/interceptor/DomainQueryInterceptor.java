@@ -29,18 +29,22 @@ public class DomainQueryInterceptor implements Interceptor {
 		if(DomainHelper.get() == null) {
 			return invocation.proceed();
 		}
-		Object[] args = invocation.getArgs();
-        MappedStatement ms = (MappedStatement) args[0];
-        Object parameterObject = args[1];
-        RowBounds rowBounds = (RowBounds) args[2];
-        ResultHandler resultHandler = (ResultHandler) args[3];
-        Executor executor = (Executor) invocation.getTarget();
-        BoundSql boundSql = ms.getBoundSql(parameterObject);
-        String domainSql = generatorSQL(boundSql.getSql(), parameterObject);
-        BoundSql domainBoundSql = new BoundSql(ms.getConfiguration(), domainSql, boundSql.getParameterMappings(), parameterObject);
-        //可以对参数做各种处理
-        CacheKey cacheKey = executor.createCacheKey(ms, parameterObject, rowBounds, domainBoundSql);
-        return executor.query(ms, parameterObject, rowBounds, resultHandler, cacheKey, domainBoundSql);
+		try {
+			Object[] args = invocation.getArgs();
+	        MappedStatement ms = (MappedStatement) args[0];
+	        Object parameterObject = args[1];
+	        RowBounds rowBounds = (RowBounds) args[2];
+	        ResultHandler resultHandler = (ResultHandler) args[3];
+	        Executor executor = (Executor) invocation.getTarget();
+	        BoundSql boundSql = ms.getBoundSql(parameterObject);
+	        String domainSql = generatorSQL(boundSql.getSql(), parameterObject);
+	        BoundSql domainBoundSql = new BoundSql(ms.getConfiguration(), domainSql, boundSql.getParameterMappings(), parameterObject);
+	        //可以对参数做各种处理
+	        CacheKey cacheKey = executor.createCacheKey(ms, parameterObject, rowBounds, domainBoundSql);
+	        return executor.query(ms, parameterObject, rowBounds, resultHandler, cacheKey, domainBoundSql);
+		}finally{
+			DomainHelper.finishHelper();
+		}
 	}
 	
 	 /**
