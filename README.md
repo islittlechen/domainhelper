@@ -35,6 +35,7 @@
   将当前用户信息保存到ThreadLocal中。SQL Query Executor拦截器在执行完后会自己移除。多次执行拦截器存在问题，因为在最后一个拦截器执行完会主动移除。
   
 3.管理域回调，需要实现DomainProcessor接口，例如：
+
 import com.github.domainhelper.sql.domain.UserDomain;
 import com.github.domainhelper.sql.helper.DomainHelper;
 import com.github.domainhelper.sql.processor.DomainProcessor;
