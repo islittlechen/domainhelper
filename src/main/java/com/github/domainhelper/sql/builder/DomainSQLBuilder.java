@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.github.domainhelper.configure.ConfigurationService;
 import com.github.domainhelper.configure.DomainConfiguration;
 import com.github.domainhelper.sql.domain.UserDomain;
+import com.github.domainhelper.sql.keyword.MysqlKeyWord;
 import com.github.domainhelper.sql.parser.DomainSegInsertPositionParser;
 import com.github.domainhelper.sql.parser.SQLParser;
 import com.github.domainhelper.sql.parser.SQLSegment;
@@ -15,19 +16,19 @@ public class DomainSQLBuilder {
 
 	public static final String builder(String sql,ConfigurationService configurationService) {
 		String resultSql = "";
-		if(sql.indexOf("union") == -1) {
+		if(sql.indexOf(MysqlKeyWord.UNION.getLowCase()) == -1) {
 			SQLSegment segment = SQLParser.parser(sql);
 			ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
 			BuilderSegment builderSeg = regression(segment,configMap);
 			return builderSeg.applySql;
 		}else {
-			String[] subSqls = sql.split("union");
+			String[] subSqls = sql.split(MysqlKeyWord.UNION.getLowCase());
 			for(String subSql:subSqls) {
 				SQLSegment segment = SQLParser.parser(subSql);
 				ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
 				BuilderSegment builderSeg = regression(segment,configMap);
 				if(resultSql.length() > 0) {
-					resultSql += " union ";
+					resultSql += " "+MysqlKeyWord.UNION.getLowCase()+" ";
 				}
 				resultSql += builderSeg.applySql;
 			}
@@ -82,17 +83,17 @@ public class DomainSQLBuilder {
 		StringBuilder domainCondition = new StringBuilder(" ");
 		int location = DomainSegInsertPositionParser.location(sql);
 		
-		if(sql.indexOf("where") == -1) {
-			domainCondition.append("where");
+		if(sql.indexOf(MysqlKeyWord.WHERE.getLowCase()) == -1) {
+			domainCondition.append(MysqlKeyWord.WHERE.getLowCase());
 		}else {
-			domainCondition.append(" and ");
+			domainCondition.append(" "+MysqlKeyWord.AND.getLowCase()+" ");
 		}
 		
 		String aliasName = TableAliasSQLParser.parseAlias(sql, configuration.getDomainTableName());
 		if(null != aliasName) {
 			domainCondition.append(aliasName).append(".");
 		}
-		domainCondition.append(configuration.getDomainColumnName()).append(" in (");
+		domainCondition.append(configuration.getDomainColumnName()).append(" ").append(MysqlKeyWord.IN.getLowCase()).append(" (");
 		boolean flag = false;
 		for(Object id: userDomain.getDomains()) {
 			 if(flag) {
