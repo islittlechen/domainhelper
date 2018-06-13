@@ -1,4 +1,7 @@
 # domainhelper
+
+【注意】目前SQL解析还不全面，仅支持被拦截SQL只带有一个子查询和一个union查询。
+
 使用实例
 1.mybatis配置
   <bean id="companyDomainProcessor" class="com.achilles.adminCommon.util.CompanyDomainProcessor"/>
