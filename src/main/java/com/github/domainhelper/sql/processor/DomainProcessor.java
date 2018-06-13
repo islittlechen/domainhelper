@@ -4,5 +4,5 @@ import com.github.domainhelper.sql.domain.UserDomain;
 
 public interface DomainProcessor {
 
-	public UserDomain processor();
+	public UserDomain processor(Object paramObject);
 }

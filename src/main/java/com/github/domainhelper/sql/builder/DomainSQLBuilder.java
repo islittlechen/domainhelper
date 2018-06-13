@@ -14,19 +14,19 @@ import com.github.domainhelper.sql.parser.TableAliasSQLParser;
 
 public class DomainSQLBuilder {
 
-	public static final String builder(String sql,ConfigurationService configurationService) {
+	public static final String builder(String sql,ConfigurationService configurationService,Object paramObject) {
 		String resultSql = "";
 		if(sql.indexOf(MysqlKeyWord.UNION.getLowCase()) == -1) {
 			SQLSegment segment = SQLParser.parser(sql);
 			ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
-			BuilderSegment builderSeg = regression(segment,configMap);
+			BuilderSegment builderSeg = regression(segment,configMap,paramObject);
 			return builderSeg.applySql;
 		}else {
 			String[] subSqls = sql.split(MysqlKeyWord.UNION.getLowCase());
 			for(String subSql:subSqls) {
 				SQLSegment segment = SQLParser.parser(subSql);
 				ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
-				BuilderSegment builderSeg = regression(segment,configMap);
+				BuilderSegment builderSeg = regression(segment,configMap,paramObject);
 				if(resultSql.length() > 0) {
 					resultSql += " "+MysqlKeyWord.UNION.getLowCase()+" ";
 				}
@@ -36,13 +36,13 @@ public class DomainSQLBuilder {
 		}
 	}
 	
-	private static final BuilderSegment regression(SQLSegment segment,ConcurrentHashMap<String, DomainConfiguration> configMap) {
+	private static final BuilderSegment regression(SQLSegment segment,ConcurrentHashMap<String, DomainConfiguration> configMap,Object paramObject) {
 		
 		if(segment.getInnerSegment() != null) {
-			BuilderSegment inner = regression(segment.getInnerSegment(),configMap);
+			BuilderSegment inner = regression(segment.getInnerSegment(),configMap,paramObject);
 			String currentSql = segment.getPrifixSql()+inner.applySql+segment.getSuffixSql();
 			if(!inner.applyed) {
-				String applySql = generator(currentSql, configMap);
+				String applySql = generator(currentSql, configMap,paramObject);
 				inner.applySql = applySql;
 			}else {
 				inner.applySql = currentSql;
@@ -50,7 +50,7 @@ public class DomainSQLBuilder {
 			return inner;
 		}else {
 			String prefixSql = segment.getPrifixSql();
-			String applySql = generator(prefixSql, configMap);
+			String applySql = generator(prefixSql, configMap,paramObject);
 			BuilderSegment current = new BuilderSegment();
 			if(applySql.equals(prefixSql)) {
 				current.applyed = false;
@@ -63,20 +63,20 @@ public class DomainSQLBuilder {
 		 
 	}
 	
-	private static final String generator(String sql,ConcurrentHashMap<String, DomainConfiguration> configMap) {
+	private static final String generator(String sql,ConcurrentHashMap<String, DomainConfiguration> configMap,Object paramObject) {
 		Iterator<String> iterator = configMap.keySet().iterator();
 		while(iterator.hasNext()) {
 			String tableName = iterator.next();
 			if(sql.indexOf(tableName) != -1) {
-				sql = apply(sql,configMap.get(tableName));
+				sql = apply(sql,configMap.get(tableName),paramObject);
 				break;
 			}
 		}
 		return sql;
 	}
 	
-	private static final String apply(String sql,DomainConfiguration configuration) {
-		UserDomain userDomain = configuration.getDomainProcessor().processor();
+	private static final String apply(String sql,DomainConfiguration configuration,Object paramObject) {
+		UserDomain userDomain = configuration.getDomainProcessor().processor(paramObject);
 		if(userDomain.isAdmin()) {
 			return sql;
 		}
