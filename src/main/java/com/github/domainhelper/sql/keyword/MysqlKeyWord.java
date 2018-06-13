@@ -3,7 +3,8 @@ package com.github.domainhelper.sql.keyword;
 public enum MysqlKeyWord {
 
 	UNION("union","UNION"),LEFT_BRACKET("(","("),RIGHT_BRACKET(")",")"),ORDER("order","ORDER"),
-	GROUP("group","GROUP"),WHERE("where","WHERE"),AS("as","AS"),AND("and","AND"),IN("in","IN");
+	GROUP("group","GROUP"),WHERE("where","WHERE"),AS("as","AS"),AND("and","AND"),IN("in","IN"),
+	LIMIT("limit","LIMIT");
 	
 	private String lowCase;
 	
