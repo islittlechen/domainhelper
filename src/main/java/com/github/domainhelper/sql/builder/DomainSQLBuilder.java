@@ -14,10 +14,25 @@ import com.github.domainhelper.sql.parser.TableAliasSQLParser;
 public class DomainSQLBuilder {
 
 	public static final String builder(String sql,ConfigurationService configurationService) {
-		SQLSegment segment = SQLParser.parser(sql);
-		ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
-		BuilderSegment builderSeg = regression(segment,configMap);
-		return builderSeg.applySql;
+		String resultSql = "";
+		if(sql.indexOf("union") == -1) {
+			SQLSegment segment = SQLParser.parser(sql);
+			ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
+			BuilderSegment builderSeg = regression(segment,configMap);
+			return builderSeg.applySql;
+		}else {
+			String[] subSqls = sql.split("union");
+			for(String subSql:subSqls) {
+				SQLSegment segment = SQLParser.parser(subSql);
+				ConcurrentHashMap<String, DomainConfiguration> configMap = configurationService.getConfiguration();
+				BuilderSegment builderSeg = regression(segment,configMap);
+				if(resultSql.length() > 0) {
+					resultSql += " union ";
+				}
+				resultSql += builderSeg.applySql;
+			}
+			return resultSql;
+		}
 	}
 	
 	private static final BuilderSegment regression(SQLSegment segment,ConcurrentHashMap<String, DomainConfiguration> configMap) {
