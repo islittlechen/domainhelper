@@ -2,7 +2,7 @@ package com.github.domainhelper.sql.keyword;
 
 public enum MysqlKeyWord {
 
-	UNION("union","UNION"),LEFT_BRACKET("(","("),RIGHT_BRACKET(")",")"),ORDER("order","ORDER"),
+	UNION("union","UNION"),SELECT("select","SELECT"),ORDER("order","ORDER"),
 	GROUP("group","GROUP"),WHERE("where","WHERE"),AS("as","AS"),AND("and","AND"),IN("in","IN"),
 	LIMIT("limit","LIMIT");
 	

@@ -54,7 +54,7 @@ public class DomainQueryInterceptor implements Interceptor {
 	  * @return
 	  */
 	private String generatorSQL(String originSQL,Object parameterObject ) {
-		String queryDomainSql = originSQL.toLowerCase();
+		String queryDomainSql = originSQL.toUpperCase();
 		 
 		return DomainSQLBuilder.builder(queryDomainSql,configurationService,parameterObject);
 	}
