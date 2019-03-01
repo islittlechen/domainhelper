@@ -64,7 +64,9 @@ public class DomainSQLBuilder {
 		for(String rpsql:order) {
 			String rpsqlFormat = MySQLFormatUtil.formatWithWhitespace(rpsql).trim();
 			String destsqlFormat =  MySQLFormatUtil.formatWithWhitespace(needReplaceMap.get(rpsql)).trim();
-			
+			if(resultSql.equals(resultSql)){
+				return destsqlFormat;
+			}
 			while(resultSql.contains(rpsqlFormat)) {
 				int index = resultSql.indexOf(rpsqlFormat);
 				resultSql = resultSql.substring(0, index) + destsqlFormat + resultSql.substring(index+rpsqlFormat.length());
@@ -88,6 +90,9 @@ public class DomainSQLBuilder {
 	}
 	
 	private static final void regressionJoinQuery(List<String> order,HashMap<String, String> needReplaceMap, SQLTableSource sqlTableSource,ConcurrentHashMap<String, DomainConfiguration> configMap,Object paramObject) {
+		if(null == sqlTableSource){
+			return;
+		}
 		String sql = sqlTableSource.toString();
 		if(sqlTableSource instanceof SQLExprTableSource) {
 			//最底层SQL
@@ -127,7 +132,7 @@ public class DomainSQLBuilder {
 		Iterator<String> iterator = configMap.keySet().iterator();
 		while(iterator.hasNext()) {
 			String tableName = iterator.next();
-			if(sql.indexOf(tableName) != -1) {
+			if(needApply(sql,tableName)) {
 				String applysql = apply(sql,configMap.get(tableName),paramObject);
 				if(!applysql.equals(sql)) {
 					if(!order.contains(sql)) {
@@ -139,6 +144,20 @@ public class DomainSQLBuilder {
 			}
 		}
 		return sql;
+	}
+
+	private static final boolean needApply(String sql,String tableName){
+		int index = sql.indexOf(tableName);
+		if( index > 0 && (sql.charAt(index-1) == ' ' || sql.charAt(index-1) == ',')){
+			if(sql.length() == index + tableName.length()){
+				return true;
+			}
+			if(sql.charAt(index+tableName.length()) == ' ' || sql.charAt(index+tableName.length()) == ','
+		      || sql.charAt(index+tableName.length()) == '\n' || sql.charAt(index+tableName.length()) == '\t'){
+				return  true;
+			}
+		}
+		return false;
 	}
 	
 	private static final String apply(String sql,DomainConfiguration configuration,Object paramObject) {
@@ -153,7 +172,7 @@ public class DomainSQLBuilder {
 		int location = DomainSegInsertPositionParser.location(sql);
 		
 		if(sql.indexOf(MysqlKeyWord.WHERE.getUpperCase()) == -1) {
-			domainCondition.append(MysqlKeyWord.WHERE.getUpperCase());
+			domainCondition.append(MysqlKeyWord.WHERE.getUpperCase()+" ");
 		}else {
 			domainCondition.append(" "+MysqlKeyWord.AND.getUpperCase()+" ");
 		}

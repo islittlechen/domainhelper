@@ -51,6 +51,9 @@ public class TableAliasSQLParser {
 		if(tableAlias.length() == 0) {
 			return null;
 		}
+		if(tableAlias.equals("\n") || tableAlias.equals("\t")){
+			return null;
+		}
 		return tableAlias;
 	}
 	
